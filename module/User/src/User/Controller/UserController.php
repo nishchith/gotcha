@@ -7,7 +7,6 @@ use Zend\View\Model\JsonModel;
 use Zend\Mail\Message;
 
 use Core\Uri;
-// use User\Model\User;
 
 class UserController extends AbstractActionController
 {
@@ -36,7 +35,7 @@ class UserController extends AbstractActionController
 			$params = json_decode(stripslashes($_POST['DATA']), false, 512, JSON_BIGINT_AS_STRING);
 
 			$userData = array(
-				// 'id' 				=> $params->cloudId,
+				// 'id' 			=> $params->cloudId,
 				'firstName' 		=> $params->firstName,
 				'lastName' 			=> $params->lastName,
 				'gender' 			=> $params->gender,
@@ -102,8 +101,6 @@ class UserController extends AbstractActionController
 			{
 				// 1. Format $data if user data returned
 
-				// 2. Else populate $data from Milestone Db
-
 				$data = "User Data";
 
 				$result = array(
@@ -168,7 +165,7 @@ class UserController extends AbstractActionController
 						'msg' => "Please Try Again Later",
 						);
 				}
-			} 
+			}
 			else
 			{
 				$result = array(
@@ -261,9 +258,7 @@ class UserController extends AbstractActionController
 	/**
 	 * This method generates random string of given length of 
 	 * total length of the string and
-	 * total count of charecters 
-	 * total count of numbers 
-	 * total count of symbols 
+	 * total count of charecters, numbers and symbols 
 	 * to be included in the string
 	 */
 	public function generatePassword($l = 8, $c = 0, $n = 0, $s = 0) 
@@ -341,7 +336,7 @@ class UserController extends AbstractActionController
 	}
 
 	/**
-	 *  To send SMTP Mail
+	 *  Sends SMTP Mail
 	 */
 	public function sendPasswordByEmail($email, $password)
 	{
