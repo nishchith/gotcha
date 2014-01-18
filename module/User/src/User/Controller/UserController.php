@@ -25,7 +25,7 @@ class UserController extends AbstractActionController
 	public function indexAction()
 	{
 		return new JsonModel(array(
-			'MAIN' => "Welcome to DutchLady. You are seeing this message probably beause you have hit a wrong URL! Please contact our service team.",
+			'RESPONSE' => "Welcome to DutchLady. You are seeing this message probably beause you have hit a wrong URL! Please contact our service team.",
 		));
 	}
 
@@ -33,7 +33,7 @@ class UserController extends AbstractActionController
 	{
 		try
 		{
-			$params = json_decode(stripslashes($_POST['REQUEST']), false, 512, JSON_BIGINT_AS_STRING);
+			$params = json_decode(stripslashes($_POST['DATA']), false, 512, JSON_BIGINT_AS_STRING);
 
 			$userData = array(
 				// 'id' 				=> $params->cloudId,
@@ -88,7 +88,7 @@ class UserController extends AbstractActionController
 	{
 		try 
 		{
-			$params = json_decode(stripslashes($_POST['REQUEST']));
+			$params = json_decode(stripslashes($_POST['DATA']));
 
 			$userData = array(
 				'username' 		=> $params->username,
@@ -103,7 +103,7 @@ class UserController extends AbstractActionController
 				// 1. Format $data if user data returned
 
 				// 2. Else populate $data from Milestone Db
-				
+
 				$data = "User Data";
 
 				$result = array(
@@ -129,90 +129,113 @@ class UserController extends AbstractActionController
 		}
 
 		return new JsonModel(array(
-			'MAIN' => $result,
+			'RESPONSE' => $result,
 			));
 	}
 
 	public function resetPasswordAction()
 	{
-		$user = new User();
-
-		$params = $user->exchangeJsonToArray(json_decode(stripslashes($_POST['DATA'])));
-
-		if (true) //$this->getUserTable()->ifUserExist($params['email']))
+		try 
 		{
-			$email = $params['email'];
-			$password = $this->generatePassword(8,2,2);
-			$this->sendPasswordByEmail($email, $password);
-			$result['status'] = true;
-		}
-		else
+			$params = json_decode(stripslashes($_POST['DATA']));
+
+			$userData = array(
+				'email'	=> strtolower($params->email),
+				); 
+
+			//$isRegistered = $this->getUserTable()->isUserExist($userData['email']))
+
+			if ($isRegistered)
+			{
+				$password = $this->generatePassword(8,2,2);
+
+				//$response = $this->getUserTable()->updatePassword($password);
+
+				if ($response)
+				{
+					$this->sendPasswordByEmail($userData['email'], $password);
+
+					$result = array(
+						'status' => true,
+						'msg' => "Email Sent Successfully. Please Check Your Inbox",
+						'data' => $response,
+						);
+				}
+				else
+				{
+					$result = array(
+						'status' => false,
+						'msg' => "Please Try Again Later",
+						);
+				}
+			} 
+			else
+			{
+				$result = array(
+					'status' => false,
+					'msg' => "Email Is Not Registered. Please Sign Up!",
+					);
+			}
+		} 
+		catch (\Exception $e) 
 		{
-			$result['status'] = false;
-			$result['error'] = "User Not Registered.";
+			$result = array(
+				'status' => false,
+				'msg' => "Exception: " .$e->getMessage(),
+				);
 		}
 
 		return new JsonModel(array(
-			'MAIN' => $result,
-		));
+			'RESPONSE' => $result,
+			));
 	}
 
 	public function changePasswordAction()
 	{
-		$params = $user->exchangeJsonToArray(json_decode(stripslashes($_POST['DATA'])));
-
-		$newPassword = json_decode(stripslashes($_POST['DATA']))->newPassword;
-
-		$row = $this->getUserTable()->fetchUser($params);
-
-		if ($row)
+		try 
 		{
-			$parameters = array(
-				'newPassword' => $newPassword,
-				'email' => $params['email']
+			$params = json_decode(stripslashes($_POST['DATA']));
+
+			$userData = array(
+				'username' 		=> $params->username,
+				'password' 		=> $params->password,
+				'resetPassword'	=> $params->resetPassword,
+			); 
+
+			// $response = Call External API
+
+			if ($response->status)
+			{
+				$result = array(
+					'status' => true,
+					'msg' => "Password Successfully Changed",
+					// 'data' => $data,
+					);
+			} 
+			else
+			{
+				$result = array(
+					'status' => false,
+					'msg' => "Invalid UserId Or Password",
+					);
+			}
+		} 
+		catch (\Exception $e) 
+		{
+			$result = array(
+				'status' => false,
+				'msg' => "Exception: " .$e->getMessage(),
 				);
-
-			$result = $this->getUserTable()->update($parameters);
-			$result['status'] = true;
-		}
-		else
-		{
-			$result['status'] = false;
-			$result['error'] = "Invalid UserId or Password";
 		}
 
 		return new JsonModel(array(
-			'MAIN' => $result,
+			'RESPONSE' => $result,
 			));
 	}
 
 	public function checkAclAction()
 	{
-		$params = $user->exchangeJsonToArray(json_decode(stripslashes($_POST['DATA'])));
-
-		$newPassword = json_decode(stripslashes($_POST['DATA']))->newPassword;
-
-		$row = $this->getUserTable()->fetchUser($params);
-
-		if ($row)
-		{
-			$parameters = array(
-				'newPassword' => $newPassword,
-				'email' => $params['email']
-				);
-
-			$result = $this->getUserTable()->update($parameters);
-			$result['status'] = true;
-		}
-		else
-		{
-			$result['status'] = false;
-			$result['error'] = "Invalid UserId or Password";
-		}
-
-		return new JsonModel(array(
-			'MAIN' => $result,
-		));
+		// TBD
 	}
 
 	public function redirect($url, $data)
